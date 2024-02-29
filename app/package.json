@@ -1,0 +1,22 @@
+{
+  "name": "oac-desktop",
+  "version": "1.0.0",
+  "description": "Open Argb Controller Desktop",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "rollup": "rollup -p @rollup/plugin-node-resolve import.js -o bundle.js"
+  },
+  "author": "xianfei",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^29.1.0"
+  },
+  "dependencies": {
+    "@mdui/icons": "^1.0.2",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "mdui": "^2.0.6",
+    "rollup": "^4.12.0",
+    "rollup-plugin-import-css": "^3.5.0"
+  }
+}

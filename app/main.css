@@ -1,0 +1,39 @@
+body::-webkit-scrollbar {
+    display: none;
+}
+
+body{
+    -webkit-user-select: none;
+}
+
+.titlebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 30px;
+    z-index: 1000;
+    -webkit-app-region: drag;
+    background-color: rgb(var(--mdui-color-background));
+}
+
+.titlebar-title{
+    margin: 7px 12px;
+    font-family: "DOTMATRI";
+    position: absolute;
+    font-size: 16px;
+    word-spacing: -5px;
+}
+
+input[type="color"] {
+    border: none;
+    background: none;
+}
+
+#color-chooser {
+   
+   width: 30px;
+    height: 30px;
+    border-radius: 2px;
+}
+

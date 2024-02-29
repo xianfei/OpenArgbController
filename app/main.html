@@ -1,0 +1,158 @@
+<!--index.html-->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Hello World!</title>
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="fonts/fonts.css">
+    <link rel="stylesheet" href="node_modules/mdui/mdui.css">
+    <script src="node_modules/mdui/mdui.global.js"></script>
+    <script src="libs/vue.js"></script>
+    <script src="libs/Sortable.js"></script>
+    <script src="libs/vuedraggable.umd.js"></script>
+</head>
+
+<body>
+    <div class="titlebar">
+        <span class="titlebar-title">Open <span
+                style="background: linear-gradient(to right, red, orange, green, blue, indigo, violet); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ARGB</span>
+            Controller</span>
+    </div>
+    <div style="padding: 10px 20px;margin: 20px auto; max-width: 650px;" id="app">
+        <div>
+            <h2>Light Mode</h2>
+            <mdui-navigation-bar :value="mode" @change="mode = $event.target.value" style="position: relative;box-shadow:none;z-index: 0;"
+                label-visibility="labeled">
+                <mdui-navigation-bar-item icon="looks" value="rainbow">Rainbow</mdui-navigation-bar-item>
+                <mdui-navigation-bar-item icon="lightbulb" value="static">Static</mdui-navigation-bar-item>
+                <mdui-navigation-bar-item icon="sync" value="item-4">ColorCycle</mdui-navigation-bar-item>
+                <mdui-navigation-bar-item icon="music_note" value="item-5">MusicRhyme</mdui-navigation-bar-item>
+                <mdui-navigation-bar-item icon="thermostat" value="item-6">Temperature</mdui-navigation-bar-item>
+                <mdui-navigation-bar-item icon="hide_source" value="item-3">None</mdui-navigation-bar-item>
+            </mdui-navigation-bar>
+        </div>
+        <div>
+            <h2>Color</h2>
+            Choose color: <input type="color" id="color-chooser" value="#ffffff">
+            &nbsp;&nbsp;&nbsp;Recently used:
+
+        </div>
+        <div>
+            <h2>Colors</h2>
+            Presents:<br>
+            <div>&nbsp;</div>
+            <div style="border: solid 1px #ccc;border-radius: 10px;width: 300px;">
+                <draggable v-model="myArray" handle=".handle" v-bind="dragOptions" @start="drag = true"
+                    @end="drag = false">
+                    <transition-group type="transition" :name="!drag ? 'flip-list' : null">
+                        <div v-for="element,i in myArray" :key="element.id" style="position: relative;">
+                            <mdui-divider middle v-if="i!=0"></mdui-divider>
+                            <div style="height: 40px;">
+                                <mdui-button-icon icon="drag_handle" class="handle" style="transform: scale(0.75);"></mdui-button-icon>
+                                <input type="color" v-model="element.color" style="position: absolute;margin-top: 6px;">
+                                <span
+                                    style="position: absolute;margin-top: 12px;margin-left: 55px;font-size: 12px;">Position{{i}}:
+                                    {{element.color}}</span>
+                                <mdui-button-icon icon="close" style="right: 5px;position: absolute;transform: scale(0.75);"
+                                    @click="removeAt(i)"></mdui-button-icon>
+                            </div>
+                        </div>
+                    </transition-group>
+                </draggable>
+            </div>
+            <div>
+                <br>
+                <mdui-button @click="add">Add Color<mdui-icon slot="icon"
+                        name="add"></mdui-icon></mdui-button>&nbsp;&nbsp;
+                <mdui-button variant="tonal" @click="add">Save<mdui-icon slot="icon"
+                        name="file_download"></mdui-icon></mdui-button>
+            </div>
+
+        </div>
+        
+        <div>
+            <h2 style="display: inline-block;">Pulse Effect</h2>
+            <div style="width: 50%;display:inline-block;position: absolute;margin-top: 18px; margin-left: 20px;">
+                <mdui-switch id="pulse"></mdui-switch><span
+                    style="position: absolute;margin-top: 8px;margin-left: 28px;">Speed:</span> <mdui-slider value="5"
+                    min="0" max="10"
+                    style="width: 200px;display:inline-block;position: absolute;margin-left: 80px;"></mdui-slider>
+            </div>
+        </div>
+        <div>
+            <h2 style="display: inline-block;">Flow Effect</h2>
+            <div style="width: 50%;display:inline-block;position: absolute;margin-top: 18px; margin-left: 20px;">
+                <mdui-switch id="pulse"></mdui-switch><span
+                    style="position: absolute;margin-top: 8px;margin-left: 28px;">Speed:</span> <mdui-slider value="5"
+                    min="0" max="10"
+                    style="width: 200px;display:inline-block;position: absolute;margin-left: 80px;"></mdui-slider>
+            </div>
+        </div>
+        <div>
+            <h2 style="display: inline-block;">Brightness</h2>
+            <mdui-slider value="10" min="0" max="10"
+                style="width: 300px;display:inline-block;position: absolute;margin-top: 18px;"></mdui-slider>
+        </div>
+        <div>
+            <h2>About</h2>
+            We are using Node.js <span id="node-version"></span>,
+            Chromium <span id="chrome-version"></span>,
+            and Electron <span id="electron-version"></span>.
+            {{ message }}
+            <div><br><mdui-button onclick="ipcRenderer.send('xf-exit');">Close<mdui-icon slot="icon"
+                        name="logout"></mdui-icon></mdui-button></div>
+        </div>
+
+    </div>
+
+    <!-- You can also require other files to run in this process -->
+    <script>
+        const ipcRenderer = require("electron").ipcRenderer;
+
+        const app = new Vue({
+            el: '#app',
+            data: {
+                message: 'Hello Vue!',
+                mode:'rainbow',
+                drag: false,
+                myArray: [{ id: 1, name: 'test1', color: '#c62eda' }, { id: 2, name: 'test2', color: '#830243' }, { id: 3, name: 'test3', color: '#012743' }],
+            },
+            methods: {
+                removeAt(idx) {
+                    this.myArray.splice(idx, 1);
+                },
+                add: function () {
+                    this.myArray.push({ id: 1, name: 'test1', color: '#c62eda' });
+                }
+            },
+            computed: {
+                dragOptions() {
+                    return {
+                        animation: 200,
+                        group: "description",
+                        disabled: false,
+                        ghostClass: "ghost"
+                    };
+                }
+            }
+        })
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const replaceText = (selector, text) => {
+                const element = document.getElementById(selector)
+                if (element) element.innerText = text
+            }
+
+            for (const type of ['chrome', 'node', 'electron']) {
+                replaceText(`${type}-version`, process.versions[type])
+            }
+        })
+
+        mdui.setColorScheme('#48c6ef');
+    </script>
+</body>
+
+</html>
