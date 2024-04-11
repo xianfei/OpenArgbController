@@ -7,9 +7,21 @@ body{
 }
 
 mdui-navigation-rail{
-    background-color: color-mix(in srgb,rgb(var(--mdui-color-surface)) 50%,transparent 0%);
+    -webkit-app-region: drag;
+    background-color: color-mix(in srgb,rgb(var(--mdui-color-surface)) 70%,transparent 0%);
 
 }
+
+mdui-navigation-rail mdui-navigation-rail-item {
+    -webkit-app-region: no-drag;
+
+}
+
+mdui-navigation-rail mdui-tooltip * {
+    -webkit-app-region: no-drag;
+
+}
+
 
 .titlebar {
     position: fixed;

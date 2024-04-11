@@ -1,4 +1,5 @@
 const ipcRenderer = require("electron").ipcRenderer;
+const { version } = require("os");
 const { SerialPort } = require('serialport')
 const APP_VERSION = '0.0.1';
 const REQUIRE_HARDWARE_VERSION = '0.0.1';
@@ -8,12 +9,14 @@ const REQUIRE_HARDWARE_VERSION = '0.0.1';
 const app = new Vue({
     el: '#app',
     data: {
-        mode: 'rainbow',
+        mode: 'static',
         platform: require("os").platform(),
+        tab: 'hard',
         drag: false,
         devices: [],
         selDevice: null,
         connected: false,
+        appversion: APP_VERSION,
         on: true,
         myArray: [{ id: 1, name: 'test1', color: '#c62eda' }, { id: 2, name: 'test2', color: '#830243' }, { id: 3, name: 'test3', color: '#012743' }],
     },
@@ -44,14 +47,14 @@ var port = null;
 async function listSerialPorts() {
     await SerialPort.list().then((ports, err) => {
         if (err) {
-            document.getElementById('error').textContent = err.message
+            document.getElementById('error2').innerText = err.message
             return
         } else {
-            document.getElementById('error').textContent = ''
+            document.getElementById('error2').innerText = ''
         }
 
         if (ports.length === 0) {
-            document.getElementById('error').textContent = 'No ports discovered'
+            document.getElementById('error2').innerText = 'No ports discovered'
         }
 
         app.devices = ports
@@ -103,14 +106,27 @@ function compareVersion(version1, version2) {
     return 0
 }
 
+var gotedData = false;
 
 function connect() {
+    if (app.connected) {
+        return
+    }
+
+    setTimeout(() => {
+        if (!gotedData) {
+            document.getElementById('error').textContent = 'Not response from hardware, please try again or check your hardware';
+            port.close()
+            app.connected = false;
+        }
+    }, 3000);
+
     if (app.selDevice == null) {
-        mdui.alert('Please select a device first');
+        alert('Please select a device first');
         return;
     }
 
-    port = new SerialPort(app.selDevice, { baudRate: 9600 });
+    port = new SerialPort({ path: app.selDevice, baudRate: 9600 });
 
     port.on('open', function () {
         console.log('Port open');
@@ -130,23 +146,25 @@ function connect() {
     port.on('data', function (data) {
         console.log('Data:', data.toString());
         var json = JSON.parse(data.toString());
+        if (!json.ok) {
+            document.getElementById('error').textContent = 'Error hardware, please try another device';
+            port.close()
+            app.connected = false;
+            return
+        }
         if (json.error) {
             document.getElementById('error').textContent = 'Error on hardware: ' + json.error;
+            return
         }
         if (json.version) {
             if (compareVersion(json.version, REQUIRE_HARDWARE_VERSION) < 0) {
                 document.getElementById('error').textContent = 'Hardware version is ' + json.version + ' which is not compatible with this software. Please update your hardware.';
                 port.close()
                 app.connected = false;
+                return
             }
         }
+        gotedData = true;
     });
 
-    port.write(JSON.stringify({ opt: 'connect', version: APP_VERSION }), function (err) {
-        if (err) {
-            document.getElementById('error').textContent = ('Error on write: ' + err.message);
-            return console.log('Error on write: ', err.message)
-        }
-        console.log('message written')
-    })
 }

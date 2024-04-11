@@ -16,129 +16,144 @@
 </head>
 
 <body style="background-color: transparent;">
-    <div style="width: 100vw;height: 100vh; z-index: -1;left: 80px;top: 0;background-color: rgb(var(--mdui-color-background)); position: fixed;"></div>
+    <div
+        style="width: 100vw;height: 100vh; z-index: -1;left: 80px;top: 0;background-color: rgb(var(--mdui-color-background)); position: fixed;">
+    </div>
     <div class="titlebar">
         <span class="titlebar-title">Open <span
                 style="background: linear-gradient(to right, red, orange, green, blue, indigo, violet); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ARGB</span>
             Controller</span>
     </div>
     <div style="padding: 10px 20px;margin: 20px auto; max-width: 650px;" id="app">
-        
-        
-        <div>
-            <h2>Serialport Settings:</h2>
-            <div id="error" style="color: red;"></div>
-            Device:<br><mdui-select :value="selDevice" @change="selDevice = $event.target.value" icon="usb">
-                <mdui-menu-item v-for="e,i in devices" :value="e.path">{{e.path}}</mdui-menu-item>
-            </mdui-select>
-            <div id="ports"></div>
-            <div><br><mdui-button onclick="ipcRenderer.send('xf-dev');">Connect<mdui-icon slot="icon"
-                        name="cable"></mdui-icon></mdui-button> <mdui-checkbox>Auto Connect</mdui-checkbox>
+        <!-- ===================Tab Hardware=================== -->
+        <div v-show="tab=='hard'">
+            <div>
+                <h2>Serialport Settings:</h2>
+                <div id="error" style="color: red;"></div><span id="error2" style="color: red;"></span>
+                Device:<br><mdui-select :value="selDevice" @change="selDevice = $event.target.value" icon="usb">
+                    <mdui-menu-item v-for="e,i in devices" :value="e.path">{{e.path}}</mdui-menu-item>
+                </mdui-select>
+                <div id="ports"></div>
+                <div><br><mdui-button onclick="connect()">Connect<mdui-icon slot="icon"
+                            name="cable"></mdui-icon></mdui-button> <mdui-checkbox>Auto Connect</mdui-checkbox>
+                </div>
+
+            </div>
+        </div>
+        <!-- ===================Tab Effects=================== -->
+        <div v-show="tab=='eff'">
+            <div>
+                <h2>Light Mode</h2>
+                <mdui-navigation-bar :value="mode" @change="mode = $event.target.value"
+                    style="position: relative;box-shadow:none;z-index: 0;" label-visibility="labeled">
+                    <mdui-navigation-bar-item icon="lightbulb" value="static">Static</mdui-navigation-bar-item>
+                    <mdui-navigation-bar-item icon="looks" value="rainbow">Rainbow</mdui-navigation-bar-item>
+                    <mdui-navigation-bar-item icon="sync" value="colorcycle">ColorCycle</mdui-navigation-bar-item>
+                    <mdui-navigation-bar-item icon="music_note" value="music">MusicRhyme</mdui-navigation-bar-item>
+                    <mdui-navigation-bar-item icon="thermostat" value="temp">Temperature</mdui-navigation-bar-item>
+                    <mdui-navigation-bar-item icon="hide_source" value="off">None</mdui-navigation-bar-item>
+                </mdui-navigation-bar>
+            </div>
+            <div v-show="mode=='static'">
+                <h3>Color</h3>
+                Choose color: <input type="color" id="color-chooser" value="#ffffff">
+                &nbsp;&nbsp;&nbsp;Recently used:
+
+            </div>
+            <div v-show="mode=='rainbow'">
+                <h3>Colors</h3>
+                Presents:<br>
+                <div>&nbsp;</div>
+                <div style="border: solid 1px #ccc;border-radius: 10px;width: 300px;">
+                    <draggable v-model="myArray" handle=".handle" v-bind="dragOptions" @start="drag = true"
+                        @end="drag = false">
+                        <transition-group type="transition" :name="!drag ? 'flip-list' : null">
+                            <div v-for="element,i in myArray" :key="element.id" style="position: relative;">
+                                <mdui-divider middle v-if="i!=0"></mdui-divider>
+                                <div style="height: 40px;">
+                                    <mdui-button-icon icon="drag_handle" class="handle"
+                                        style="transform: scale(0.75);"></mdui-button-icon>
+                                    <input type="color" v-model="element.color"
+                                        style="position: absolute;margin-top: 6px;">
+                                    <span
+                                        style="position: absolute;margin-top: 12px;margin-left: 55px;font-size: 12px;">Position{{i}}:
+                                        {{element.color}}</span>
+                                    <mdui-button-icon icon="close"
+                                        style="right: 5px;position: absolute;transform: scale(0.75);"
+                                        @click="removeAt(i)"></mdui-button-icon>
+                                </div>
+                            </div>
+                        </transition-group>
+                    </draggable>
+                </div>
+                <div>
+                    <br>
+                    <mdui-button @click="add">Add Color<mdui-icon slot="icon"
+                            name="add"></mdui-icon></mdui-button>&nbsp;&nbsp;
+                    <mdui-button variant="tonal" @click="add">Save<mdui-icon slot="icon"
+                            name="file_download"></mdui-icon></mdui-button>
+                </div>
+
             </div>
 
-        </div>
-        <div>
-            <h2>Light Mode</h2>
-            <mdui-navigation-bar :value="mode" @change="mode = $event.target.value"
-                style="position: relative;box-shadow:none;z-index: 0;" label-visibility="labeled">
-                <mdui-navigation-bar-item icon="looks" value="rainbow">Rainbow</mdui-navigation-bar-item>
-                <mdui-navigation-bar-item icon="lightbulb" value="static">Static</mdui-navigation-bar-item>
-                <mdui-navigation-bar-item icon="sync" value="colorcycle">ColorCycle</mdui-navigation-bar-item>
-                <mdui-navigation-bar-item icon="music_note" value="music">MusicRhyme</mdui-navigation-bar-item>
-                <mdui-navigation-bar-item icon="thermostat" value="temp">Temperature</mdui-navigation-bar-item>
-                <mdui-navigation-bar-item icon="hide_source" value="off">None</mdui-navigation-bar-item>
-            </mdui-navigation-bar>
-        </div>
-        <div v-show="mode=='static'">
-            <h2>Color</h2>
-            Choose color: <input type="color" id="color-chooser" value="#ffffff">
-            &nbsp;&nbsp;&nbsp;Recently used:
-
-        </div>
-        <div v-show="mode=='rainbow'">
-            <h2>Colors</h2>
-            Presents:<br>
-            <div>&nbsp;</div>
-            <div style="border: solid 1px #ccc;border-radius: 10px;width: 300px;">
-                <draggable v-model="myArray" handle=".handle" v-bind="dragOptions" @start="drag = true"
-                    @end="drag = false">
-                    <transition-group type="transition" :name="!drag ? 'flip-list' : null">
-                        <div v-for="element,i in myArray" :key="element.id" style="position: relative;">
-                            <mdui-divider middle v-if="i!=0"></mdui-divider>
-                            <div style="height: 40px;">
-                                <mdui-button-icon icon="drag_handle" class="handle"
-                                    style="transform: scale(0.75);"></mdui-button-icon>
-                                <input type="color" v-model="element.color" style="position: absolute;margin-top: 6px;">
-                                <span
-                                    style="position: absolute;margin-top: 12px;margin-left: 55px;font-size: 12px;">Position{{i}}:
-                                    {{element.color}}</span>
-                                <mdui-button-icon icon="close"
-                                    style="right: 5px;position: absolute;transform: scale(0.75);"
-                                    @click="removeAt(i)"></mdui-button-icon>
-                            </div>
-                        </div>
-                    </transition-group>
-                </draggable>
+            <div>
+                <h2 style="display: inline-block;">Pulse Effect</h2>
+                <div style="width: 50%;display:inline-block;position: absolute;margin-top: 18px; margin-left: 20px;">
+                    <mdui-switch id="pulse"></mdui-switch><span
+                        style="position: absolute;margin-top: 8px;margin-left: 28px;">Speed:</span> <mdui-slider
+                        value="5" min="0" max="10"
+                        style="width: 200px;display:inline-block;position: absolute;margin-left: 80px;"></mdui-slider>
+                </div>
             </div>
             <div>
-                <br>
-                <mdui-button @click="add">Add Color<mdui-icon slot="icon"
-                        name="add"></mdui-icon></mdui-button>&nbsp;&nbsp;
-                <mdui-button variant="tonal" @click="add">Save<mdui-icon slot="icon"
-                        name="file_download"></mdui-icon></mdui-button>
+                <h2 style="display: inline-block;">Flow Effect</h2>
+                <div style="width: 50%;display:inline-block;position: absolute;margin-top: 18px; margin-left: 20px;">
+                    <mdui-switch id="pulse"></mdui-switch><span
+                        style="position: absolute;margin-top: 8px;margin-left: 28px;">Speed:</span> <mdui-slider
+                        value="5" min="0" max="10"
+                        style="width: 200px;display:inline-block;position: absolute;margin-left: 80px;"></mdui-slider>
+                </div>
             </div>
-
-        </div>
-
-        <div>
-            <h2 style="display: inline-block;">Pulse Effect</h2>
-            <div style="width: 50%;display:inline-block;position: absolute;margin-top: 18px; margin-left: 20px;">
-                <mdui-switch id="pulse"></mdui-switch><span
-                    style="position: absolute;margin-top: 8px;margin-left: 28px;">Speed:</span> <mdui-slider value="5"
-                    min="0" max="10"
-                    style="width: 200px;display:inline-block;position: absolute;margin-left: 80px;"></mdui-slider>
+            <div>
+                <h2 style="display: inline-block;">Brightness</h2>
+                <mdui-slider value="10" min="0" max="10"
+                    style="width: 300px;display:inline-block;position: absolute;margin-top: 18px;"></mdui-slider>
             </div>
         </div>
-        <div>
-            <h2 style="display: inline-block;">Flow Effect</h2>
-            <div style="width: 50%;display:inline-block;position: absolute;margin-top: 18px; margin-left: 20px;">
-                <mdui-switch id="pulse"></mdui-switch><span
-                    style="position: absolute;margin-top: 8px;margin-left: 28px;">Speed:</span> <mdui-slider value="5"
-                    min="0" max="10"
-                    style="width: 200px;display:inline-block;position: absolute;margin-left: 80px;"></mdui-slider>
+        <!-- ===================Tab Settings=================== -->
+        <div v-show="tab=='set'">
+            <div>
+                <h2>About</h2>
+                Version:{{appversion}}  <br>
+                <span style="-webkit-user-select: text;">
+                    https://github.com/xianfei/OpenArgbController
+                </span>
+                <div><br><mdui-button onclick="ipcRenderer.send('xf-dev');">DevTools<mdui-icon slot="icon"
+                            name="logout"></mdui-icon></mdui-button></div>
             </div>
         </div>
-        <div>
-            <h2 style="display: inline-block;">Brightness</h2>
-            <mdui-slider value="10" min="0" max="10"
-                style="width: 300px;display:inline-block;position: absolute;margin-top: 18px;"></mdui-slider>
-        </div>
-        <div>
-            <h2>About</h2>
-            <span style="-webkit-user-select: text;">
-                https://github.com/xianfei/OpenArgbController
-            </span>
-            <div><br><mdui-button onclick="ipcRenderer.send('xf-dev');">DevTools<mdui-icon slot="icon"
-                        name="logout"></mdui-icon></mdui-button></div>
-        </div>
-
-        <mdui-navigation-rail contained style="position: fixed;" divider>
+        <!-- ===================NavBar=================== -->
+        <mdui-navigation-rail contained style="position: fixed;" divider :value="tab"
+            @change="tab = $event.target.value">
             <mdui-button-icon slot="top" disabled></mdui-button-icon>
-            
+
             <mdui-tooltip placement="right" :content="'Turn '+ (on?'off':'on') +' lights'" slot="top">
-                <mdui-fab lowered :icon="on?'power':'power_off'" @click="on=!on;$event.target.setAttribute('variant',on?'primary':'surface')" variant="primary"></mdui-fab>
+                <mdui-fab lowered :icon="on?'power':'power_off'"
+                    @click="on=!on;$event.target.setAttribute('variant',on?'primary':'surface')"
+                    variant="primary"></mdui-fab>
             </mdui-tooltip>
-            <mdui-tooltip variant="rich"  slot="bottom">
+            <mdui-tooltip variant="rich" slot="bottom">
                 <mdui-button-icon icon="info"></mdui-button-icon>
-                <div slot="headline">About</div>
-                <div slot="content">This is an opensource software by xianfei for controlling ARGB devices like fans and lightstrips. Please star it on Github!</div>
+                <div slot="headline">About Open ARGB Controller v{{appversion}}</div>
+                <div slot="content">This is an opensource software by xianfei for controlling ARGB devices like fans and
+                    lightstrips. Please star it on Github!</div>
                 <mdui-button slot="action" variant="text" icon="open_in_browser">Open in Github</mdui-button>
-              </mdui-tooltip>
-        
-            <mdui-navigation-rail-item icon="palette">Effects</mdui-navigation-rail-item>
-            <mdui-navigation-rail-item icon="memory">Hardware</mdui-navigation-rail-item>
-            <mdui-navigation-rail-item icon="settings">Settings</mdui-navigation-rail-item>
-          </mdui-navigation-rail>
+            </mdui-tooltip>
+
+            <mdui-navigation-rail-item icon="palette" value="eff">Effects</mdui-navigation-rail-item>
+            <mdui-navigation-rail-item icon="memory" value="hard">Hardware</mdui-navigation-rail-item>
+            <mdui-navigation-rail-item icon="settings" value="set">Settings</mdui-navigation-rail-item>
+        </mdui-navigation-rail>
 
     </div>
 

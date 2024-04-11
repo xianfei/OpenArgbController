@@ -15,6 +15,7 @@ const createWindow = () => {
     titleBarStyle: "hidden",
     vibrancy: 'hud',
     backgroundColor: "#00000000",
+    backgroundMaterial: 'acrylic',
     titleBarOverlay: {
         color: '#fff0',
         symbolColor: '#777',

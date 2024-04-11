@@ -10,7 +10,7 @@ CRGB leds[NUM_LEDS];
 void setup() {
   Serial.begin(9600);
   FastLED.addLeds<WS2812B, DATA_PIN>(leds, NUM_LEDS);
-  Serial.println("Enter data:");
+  Serial.println("{\"ok\":2}");
 
 }
 
@@ -21,7 +21,7 @@ void loop() {
     if (teststr == "red") {
       Serial.println("A primary color");
     } else {
-      Serial.println("Something else:" + teststr);
+      Serial.println("{\"ok\":1}");
     }
   }  //wait for data available
 }
