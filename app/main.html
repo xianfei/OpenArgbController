@@ -35,7 +35,8 @@
                 </mdui-select>
                 <div id="ports"></div>
                 <div><br><mdui-button onclick="connect()">Connect<mdui-icon slot="icon"
-                            name="cable"></mdui-icon></mdui-button> <mdui-checkbox>Auto Connect</mdui-checkbox>
+                            name="cable"></mdui-icon></mdui-button> &nbsp;&nbsp;<mdui-button onclick="disconnect()">DisConnect<mdui-icon slot="icon"
+                                name="cable"></mdui-icon></mdui-button> <mdui-checkbox>Auto Connect</mdui-checkbox>
                 </div>
 
             </div>
@@ -56,7 +57,7 @@
             </div>
             <div v-show="mode=='static'">
                 <h3>Color</h3>
-                Choose color: <input type="color" id="color-chooser" value="#ffffff">
+                Choose color: <input type="color" id="color-chooser" :value="color" @change="color = $event.target.value" @input="color = $event.target.value">
                 &nbsp;&nbsp;&nbsp;Recently used:
 
             </div>

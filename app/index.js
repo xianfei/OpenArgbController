@@ -17,6 +17,7 @@ const app = new Vue({
         selDevice: null,
         connected: false,
         appversion: APP_VERSION,
+        color: '#48c6ef',
         on: true,
         myArray: [{ id: 1, name: 'test1', color: '#c62eda' }, { id: 2, name: 'test2', color: '#830243' }, { id: 3, name: 'test3', color: '#012743' }],
     },
@@ -26,6 +27,30 @@ const app = new Vue({
         },
         add: function () {
             this.myArray.push({ id: 1, name: 'test1', color: '#c62eda' });
+        },
+        changeMode: function (val) {
+            if (this.connected) {
+                if (!this.on) {
+                    port.write(JSON.stringify({ mode: 'off' }) + '\n', (err) => {
+                        if (err) {
+                            console.log('Error on write: ', err.message);
+                            document.getElementById('error').textContent = 'Error on write: ' + err.message;
+                        }
+                    });
+                } else if (this.mode == 'static') {
+                    // convert hex to rgb
+                    var r = parseInt(this.color.substring(1, 3), 16);
+                    var g = parseInt(this.color.substring(3, 5), 16);
+                    var b = parseInt(this.color.substring(5, 7), 16);
+                    port.write(JSON.stringify({ mode: 'static', color: this.color,r:r,g:g,b:b }) + '\n', (err) => {
+                        if (err) {
+                            console.log('Error on write: ', err.message);
+                            document.getElementById('error').textContent = 'Error on write: ' + err.message;
+                        }
+                    });
+                }
+            }
+            console.log('mode changed to: ', val);
         }
     },
     computed: {
@@ -36,6 +61,19 @@ const app = new Vue({
                 disabled: false,
                 ghostClass: "ghost"
             };
+        }
+    },
+    watch: {
+        mode: function (val) {
+            this.changeMode(val)
+            console.log('mode changed to: ', val);
+        },
+        on: function (val) {
+            this.changeMode(val)
+            console.log('on changed to: ', val);
+        },color: function (val) {
+            this.changeMode(val)
+            console.log('color changed to: ', val);
         }
     }
 })
@@ -143,9 +181,27 @@ function connect() {
         document.getElementById('error').textContent = ('Error: ' + err.message);
     });
 
+    var dataLine = '';
+
+    
     port.on('data', function (data) {
-        console.log('Data:', data.toString());
-        var json = JSON.parse(data.toString());
+        console.log('Data:', data);
+        console.log('Data str:', data.toString());
+        if(data.toString()[data.toString().length - 1] != '\n') {
+            dataLine += data.toString();
+            return
+        }
+        dataLine += data.toString();
+        console.log('Data line:', dataLine);
+
+        if(dataLine[0] != '{') {
+            dataLine = ''
+            return
+        }
+        
+        var json = JSON.parse(dataLine);
+        dataLine = ''
+
         if (!json.ok) {
             document.getElementById('error').textContent = 'Error hardware, please try another device';
             port.close()
@@ -167,4 +223,11 @@ function connect() {
         gotedData = true;
     });
 
+}
+
+function disconnect() {
+    if (port) {
+        port.close();
+        app.connected = false;
+    }
 }
